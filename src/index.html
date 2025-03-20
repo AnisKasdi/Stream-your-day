@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Mon Site de Streaming</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dark-mode">
+    <div class="background"></div>
+    <div class="sidebar">
+        <div class="hamburger">☰</div>
+        <div class="logo">
+            <img src="logo.png" alt="Logo"> <!-- Remplace par ton vrai logo -->
+        </div>
+        <h2>Genres</h2>
+        <ul>
+            <li><a href="#" class="active"><i class="fas fa-globe"></i> Tous</a></li>
+            <li><a href="#" class="popular"><i class="fas fa-gamepad"></i> Jeux Vidéo</a></li>
+            <li><a href="#"><i class="fas fa-futbol"></i> Sport</a></li>
+            <li><a href="#" class="popular"><i class="fas fa-comment"></i> Chatting</a></li>
+            <li><a href="#"><i class="fas fa-music"></i> Musique</a></li>
+            <li><a href="#"><i class="fas fa-utensils"></i> Cuisine</a></li>
+            <li><a href="#"><i class="fas fa-paint-brush"></i> Art</a></li>
+        </ul>
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <header>
+            <div class="search-bar">
+                <input type="text" placeholder="Rechercher un stream...">
+                <button>🔍</button>
+            </div>
+            <h1>Bienvenue sur [Nom du Site]</h1>
+            <p>Découvrez les meilleurs streams en direct !</p>
+            <div class="filters">
+                <button class="filter-btn active">En direct</button>
+                <button class="filter-btn">Populaire</button>
+                <button class="filter-btn">Nouveaux</button>
+            </div>
+            <button class="theme-toggle">☀️ Mode Clair</button>
+        </header>
+        <section class="stream-grid">
+            <div class="stream-card" data-stream="stream.html">
+                <div class="thumbnail"><span class="live-badge">LIVE</span></div>
+                <h3>Stream Jeux Vidéo</h3>
+                <p>Streamer: <a href="profile.html">GamerX</a> | <span class="viewer-count">0</span> spectateurs</p>
+            </div>
+            <div class="stream-card" data-stream="stream.html">
+                <div class="thumbnail"><span class="live-badge">LIVE</span></div>
+                <h3>Chatting Live</h3>
+                <p>Streamer: <a href="profile.html">ChatMaster</a> | <span class="viewer-count">0</span> spectateurs</p>
+            </div>
+            <div class="stream-card" data-stream="stream.html">
+                <div class="thumbnail"></div>
+                <h3>Match de Foot</h3>
+                <p>Streamer: <a href="profile.html">SportFan</a> | <span class="viewer-count">0</span> spectateurs</p>
+            </div>
+        </section>
+        <section class="recommended">
+            <h2>Recommandé pour vous</h2>
+            <div class="stream-grid">
+                <div class="stream-card" data-stream="stream.html">
+                    <div class="thumbnail"><span class="live-badge">LIVE</span></div>
+                    <h3>Concert Live</h3>
+                    <p>Streamer: <a href="profile.html">MusicLover</a> | <span class="viewer-count">0</span> spectateurs</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="video-modal" id="videoModal">
+        <div class="modal-content">
+            <span class="close-modal">×</span>
+            <div class="video-placeholder">Lecteur Vidéo Ici</div>
+        </div>
+    </div>
+
+    <script>
+        // Menu pliable
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+
+        // Toggle mode sombre/clair
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Mode Clair' : '🌙 Mode Sombre';
+        });
+
+        // Ouvre la modale vidéo ou redirige vers la page de stream
+        document.querySelectorAll('.stream-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const streamUrl = card.getAttribute('data-stream');
+                if (streamUrl) {
+                    window.location.href = streamUrl; // Redirige vers stream.html
+                } else {
+                    document.getElementById('videoModal').style.display = 'block';
+                }
+            });
+        });
+
+        // Ferme la modale
+        document.querySelector('.close-modal').addEventListener('click', () => {
+            document.getElementById('videoModal').style.display = 'none';
+        });
+
+        // Nombre de spectateurs aléatoire
+        document.querySelectorAll('.viewer-count').forEach(count => {
+            const randomViewers = Math.floor(Math.random() * 5000) + 100; // Entre 100 et 5100
+            count.textContent = randomViewers.toLocaleString('fr-FR');
+        });
+    </script>
+</body>
+</html>

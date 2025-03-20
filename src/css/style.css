@@ -1,0 +1,361 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Mode sombre (par défaut) */
+body.dark-mode {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+/* Mode clair */
+body.light-mode {
+    background: #f0f0f0;
+    color: #1a1a1a;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    animation: gradient 15s ease infinite;
+}
+
+body.dark-mode .background {
+    background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+}
+
+body.light-mode .background {
+    background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: width 0.3s ease;
+}
+
+body.dark-mode .sidebar {
+    background: #252525;
+    border-right: 1px solid #9147ff;
+}
+
+body.light-mode .sidebar {
+    background: #ffffff;
+    border-right: 1px solid #9147ff;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+    overflow: hidden;
+}
+
+.hamburger {
+    font-size: 24px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+/* Logo */
+.logo {
+    margin-bottom: 20px;
+}
+
+.logo img {
+    width: 100px; /* Ajuste selon ton logo */
+    height: auto;
+}
+
+.sidebar h2 {
+    font-size: 24px;
+    color: #9147ff;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    margin: 15px 0;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar ul li a i {
+    margin-right: 10px;
+    width: 20px;
+}
+
+body.dark-mode .sidebar ul li a { color: #b3b3b3; }
+body.light-mode .sidebar ul li a { color: #666; }
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+    color: #9147ff;
+}
+
+.sidebar ul li a.popular::after {
+    content: "🔥";
+    margin-left: 5px;
+    font-size: 14px;
+}
+
+/* Main content */
+.main-content {
+    margin-left: 250px;
+    padding: 40px;
+    width: calc(100% - 250px);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+/* Barre de recherche */
+.search-bar {
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    padding: 10px;
+    width: 300px;
+    border: none;
+    border-radius: 5px;
+}
+
+body.dark-mode .search-bar input {
+    background: #252525;
+    color: #ffffff;
+}
+
+body.light-mode .search-bar input {
+    background: #ffffff;
+    color: #1a1a1a;
+}
+
+.search-bar button {
+    padding: 10px 15px;
+    background: #9147ff;
+    border: none;
+    color: #ffffff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-bar button:hover {
+    background: #7a3ad1;
+}
+
+/* Filtres */
+.filters {
+    margin: 20px 0;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    margin: 0 5px;
+    background: #252525;
+    color: #b3b3b3;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+body.light-mode .filter-btn {
+    background: #e0e0e0;
+    color: #666;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background: #9147ff;
+    color: #ffffff;
+}
+
+/* Toggle thème */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background: #9147ff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.theme-toggle:hover {
+    background: #7a3ad1;
+}
+
+/* Stream grid */
+.stream-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.stream-card {
+    border-radius: 8px;
+    padding: 15px;
+    transition: transform 0.3s ease;
+    position: relative;
+    animation: fadeIn 0.5s ease;
+    cursor: pointer; /* Indique que la carte est cliquable */
+}
+
+body.dark-mode .stream-card { background: #252525; }
+body.light-mode .stream-card { background: #ffffff; }
+
+.stream-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(145, 71, 255, 0.2);
+}
+
+.thumbnail {
+    width: 100%;
+    height: 150px;
+    background: #9147ff;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.live-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #9147ff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.stream-card h3 {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.stream-card p {
+    font-size: 14px;
+}
+
+body.dark-mode .stream-card p { color: #b3b3b3; }
+body.light-mode .stream-card p { color: #666; }
+
+.stream-card p a {
+    color: #9147ff;
+    text-decoration: none;
+}
+
+.stream-card p a:hover {
+    text-decoration: underline;
+}
+
+.viewer-count {
+    color: #9147ff;
+    font-weight: bold;
+}
+
+/* Section recommandée */
+.recommended h2 {
+    font-size: 28px;
+    margin: 40px 0 20px;
+}
+
+/* Modale vidéo */
+.video-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+}
+
+.modal-content {
+    background: #252525;
+    margin: 10% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 800px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.video-placeholder {
+    width: 100%;
+    height: 400px;
+    background: #1a1a1a;
+    border-radius: 5px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+/* Animation fade-in */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar { width: 200px; }
+    .main-content { margin-left: 200px; width: calc(100% - 200px); }
+    .stream-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid #9147ff;
+    }
+    .sidebar.collapsed { width: 100%; }
+    .main-content { margin-left: 0; width: 100%; padding: 20px; }
+    .search-bar input { width: 200px; }
+}
