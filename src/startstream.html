@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commencer un Stream - Mon Site de Streaming</title>
+    <link rel="stylesheet" href="css/startstream.css">
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dark-mode">
+    <div class="background"></div>
+    <div class="sidebar">
+        <div class="hamburger">☰</div>
+        <div class="logo">
+            <img src="src/logo.png" alt="Logo"> <!-- Remplace par ton vrai logo -->
+        </div>
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <header>
+            <h1>Commencer un Nouveau Stream</h1>
+            <p>Configurez votre stream et lancez-vous en direct !</p>
+            <button class="theme-toggle"><i class="fas fa-sun"></i> Mode Clair</button>
+        </header>
+        <section class="stream-config">
+            <div class="config-form">
+                <form id="streamForm">
+                    <div class="form-group">
+                        <label for="streamTitle">Titre du Stream</label>
+                        <input type="text" id="streamTitle" placeholder="Ex: Mon Stream de Jeux Vidéo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="streamCategory">Catégorie</label>
+                        <select id="streamCategory" required>
+                            <option value="">Sélectionner une catégorie</option>
+                            <option value="jeux-video">Jeux Vidéo</option>
+                            <option value="sport">Sport</option>
+                            <option value="chatting">Chatting</option>
+                            <option value="musique">Musique</option>
+                            <option value="cuisine">Cuisine</option>
+                            <option value="art">Art</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="streamDescription">Description (optionnel)</label>
+                        <textarea id="streamDescription" placeholder="Décrivez votre stream..."></textarea>
+                    </div>
+                    <div class="form-group options-group">
+                        <label>Options</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox">
+                                <input type="checkbox" id="chatEnabled" checked>
+                                Activer le chat
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="privateStream">
+                                Stream privé (invitation uniquement)
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="start-btn"><i class="fas fa-play"></i> Démarrer le Stream</button>
+                </form>
+            </div>
+            <div class="stream-preview">
+                <h2>Aperçu en Direct</h2>
+                <div class="video-placeholder" id="streamPreview">Aperçu de votre caméra/micro (non actif)</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Menu pliable
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+
+        // Toggle mode sombre/clair
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+            const btn = document.querySelector('.theme-toggle');
+            btn.innerHTML = document.body.classList.contains('dark-mode') 
+                ? '<i class="fas fa-sun"></i> Mode Clair' 
+                : '<i class="fas fa-moon"></i> Mode Sombre';
+        });
+
+        // Gestion du formulaire de démarrage du stream
+        document.getElementById('streamForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('streamTitle').value;
+            const category = document.getElementById('streamCategory').value;
+            const description = document.getElementById('streamDescription').value;
+            const chatEnabled = document.getElementById('chatEnabled').checked;
+            const privateStream = document.getElementById('privateStream').checked;
+
+            // Simulation du démarrage du stream
+            alert(`Stream démarré !\nTitre: ${title}\nCatégorie: ${category}\nDescription: ${description}\nChat: ${chatEnabled ? 'Activé' : 'Désactivé'}\nPrivé: ${privateStream ? 'Oui' : 'Non'}`);
+            // Redirection vers la page de stream
+            window.location.href = 'stream.html'; 
+        });
+    </script>
+</body>
+</html>

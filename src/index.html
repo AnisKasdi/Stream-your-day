@@ -13,7 +13,7 @@
     <div class="sidebar">
         <div class="hamburger">☰</div>
         <div class="logo">
-            <img src="logo.png" alt="Logo"> <!-- Remplace par ton vrai logo -->
+            <img src="src/logo.png" alt="Logo"> <!-- Remplace par ton vrai logo -->
         </div>
         <h2>Genres</h2>
         <ul>
@@ -28,6 +28,7 @@
         <h2>Navigation</h2>
         <ul>
             <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
+            <li><a href="startstream.html"><i class="fas fa-play"></i> Commencer un Stream</a></li> <!-- Ajout ici -->
             <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
         </ul>
     </div>
@@ -45,6 +46,7 @@
                 <button class="filter-btn">Nouveaux</button>
             </div>
             <button class="theme-toggle">☀️ Mode Clair</button>
+            <button class="start-stream-btn"><i class="fas fa-play"></i> Commencer un Stream</button> <!-- Ajout ici -->
         </header>
         <section class="stream-grid">
             <div class="stream-card" data-stream="stream.html">
@@ -116,6 +118,11 @@
         document.querySelectorAll('.viewer-count').forEach(count => {
             const randomViewers = Math.floor(Math.random() * 5000) + 100; // Entre 100 et 5100
             count.textContent = randomViewers.toLocaleString('fr-FR');
+        });
+
+        // Redirection vers startstream.html via le bouton
+        document.querySelector('.start-stream-btn').addEventListener('click', () => {
+            window.location.href = 'startstream.html';
         });
     </script>
 </body>
