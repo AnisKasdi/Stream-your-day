@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer le Stream - Stream Your Day</title>
+    <link rel="stylesheet" href="css/managestream.css">
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dark-mode">
+    <div class="background"></div>
+    <div class="sidebar">
+        <div class="hamburger">☰</div>
+        <div class="logo">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <header>
+            <h1>Gérer Votre Stream</h1>
+            <p>Contrôlez votre stream en direct et interagissez avec votre audience.</p>
+            <button class="theme-toggle"><i class="fas fa-sun"></i> Mode Clair</button>
+        </header>
+        <section class="stream-manage">
+            <div class="video-player">
+                <div class="video">
+                    <video id="streamVideo" autoplay playsinline style="width: 100%; height: 100%; border-radius: 5px;"></video>
+                    <span class="live-badge">LIVE</span>
+                </div>
+                <div class="stream-info">
+                    <h2 id="streamTitle">Titre du Stream</h2>
+                    <p>Streamer: <a href="profile.html">Vous</a> | <span class="viewer-count">0</span> spectateurs | Stream ID: <span id="streamId"></span></p>
+                    <div class="manage-buttons">
+                        <button class="end-stream-btn"><i class="fas fa-stop"></i> Terminer le Stream</button>
+                        <button class="kick-btn"><i class="fas fa-user-slash"></i> Kick</button>
+                        <button class="ban-btn"><i class="fas fa-ban"></i> Ban</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chat">
+                <h2>Chat en Direct</h2>
+                <div class="chat-messages" id="chatMessages">
+                    <p><strong>System:</strong> Stream démarré ! Bienvenue à tous.</p>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Envoyer un message...">
+                    <button onclick="sendMessage()">Envoyer</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let stream = null;
+        const video = document.getElementById('streamVideo');
+        let peerConnections = {};
+
+        // Récupérer les informations du stream depuis l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const streamTitle = urlParams.get('title') || 'Stream sans titre';
+        const streamId = urlParams.get('streamId') || 'N/A';
+        document.getElementById('streamTitle').textContent = streamTitle;
+        document.getElementById('streamId').textContent = streamId;
+
+        // Accéder à la caméra
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error("Erreur caméra :", err);
+                video.insertAdjacentHTML('afterend', '<p style="color: red;">Erreur caméra</p>');
+            }
+        }
+
+        // Arrêter la caméra
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+            }
+        }
+
+        // Démarrer la caméra au chargement de la page
+        window.addEventListener('load', startCamera);
+
+        // Configurer WebRTC pour le streaming
+        socket.emit('start-stream', streamId);
+
+        socket.on('offer', async (offer, viewerId) => {
+            const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            peerConnections[viewerId] = pc;
+
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('answer', answer, viewerId);
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) socket.emit('ice-candidate', event.candidate, streamId);
+            };
+        });
+
+        socket.on('ice-candidate', (candidate) => {
+            Object.values(peerConnections).forEach(pc => pc.addIceCandidate(new RTCIceCandidate(candidate)));
+        });
+
+        // Fonction pour afficher une notification moderne
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <span class="close-btn"><i class="fas fa-times"></i></span>
+            `;
+            document.body.appendChild(notification);
+
+            // Fermer la notification au clic sur le bouton de fermeture
+            notification.querySelector('.close-btn').addEventListener('click', () => {
+                notification.style.animation = 'slideOut 0.5s ease forwards';
+            });
+
+            // Supprimer la notification après l'animation
+            notification.addEventListener('animationend', (e) => {
+                if (e.animationName === 'slideOut') {
+                    notification.remove();
+                }
+            });
+        }
+
+        // Menu pliable
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+
+        // Toggle mode sombre/clair
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+            const btn = document.querySelector('.theme-toggle');
+            btn.innerHTML = document.body.classList.contains('dark-mode') 
+                ? '<i class="fas fa-sun"></i> Mode Clair' 
+                : '<i class="fas fa-moon"></i> Mode Sombre';
+        });
+
+        // Simuler un nombre de spectateurs dynamique
+        const viewerCount = document.querySelector('.viewer-count');
+        let viewers = 0;
+        setInterval(() => {
+            viewers += Math.floor(Math.random() * 10) - 5; // Variation aléatoire
+            if (viewers < 0) viewers = 0;
+            viewerCount.textContent = viewers.toLocaleString('fr-FR');
+        }, 5000);
+
+        // Fonction pour envoyer un message dans le chat
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                const chat = document.getElementById('chatMessages');
+                const newMessage = document.createElement('p');
+                newMessage.innerHTML = `<strong>Vous:</strong> ${message}`;
+                chat.appendChild(newMessage);
+                chat.scrollTop = chat.scrollHeight;
+                input.value = '';
+            }
+        }
+
+        // Simuler l'arrivée de messages aléatoires dans le chat
+        const randomMessages = [
+            "Super stream ! Continue comme ça !",
+            "Quand est-ce que tu joues à un autre jeu ?",
+            "Incroyable, GG !",
+            "Salut tout le monde !"
+        ];
+        setInterval(() => {
+            const chat = document.getElementById('chatMessages');
+            const randomMsg = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+            const newMessage = document.createElement('p');
+            newMessage.innerHTML = `<strong>User${Math.floor(Math.random() * 100)}:</strong> ${randomMsg}`;
+            chat.appendChild(newMessage);
+            chat.scrollTop = chat.scrollHeight;
+        }, 10000);
+
+        // Bouton "Terminer le Stream"
+        document.querySelector('.end-stream-btn').addEventListener('click', () => {
+            if (confirm('Voulez-vous vraiment terminer le stream ?')) {
+                fetch('/api/end-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ streamId }),
+                    credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (response.ok) {
+                        stopCamera(); // Arrêter la caméra
+                        showNotification('Stream terminé avec succès !', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000); // Rediriger après 2 secondes pour laisser le temps de voir la notification
+                    } else {
+                        showNotification(data.error, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Erreur lors de la fin du stream :', err);
+                    showNotification('Erreur lors de la fin du stream.', 'error');
+                });
+            }
+        });
+
+        // Boutons "Kick" et "Ban"
+        document.querySelector('.kick-btn').addEventListener('click', () => {
+            const user = prompt('Entrez le nom de l\'utilisateur à kicker :');
+            if (user) {
+                showNotification(`Utilisateur ${user} a été kické !`, 'success');
+            }
+        });
+
+        document.querySelector('.ban-btn').addEventListener('click', () => {
+            const user = prompt('Entrez le nom de l\'utilisateur à bannir :');
+            if (user) {
+                showNotification(`Utilisateur ${user} a été banni !`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>
