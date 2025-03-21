@@ -1,4 +1,3 @@
-<!-- src/startstream.html -->
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -15,7 +14,7 @@
     <div class="sidebar">
         <div class="hamburger">☰</div>
         <div class="logo">
-            <img src="src/logo.png" alt="Logo">
+            <img src="logo.png" alt="Logo">
         </div>
         <h2>Navigation</h2>
         <ul>
@@ -72,8 +71,9 @@
             <div class="stream-preview">
                 <h2>Aperçu en Direct</h2>
                 <video id="streamPreview" autoplay playsinline style="width: 100%; border-radius: 5px;"></video>
-                <button id="toggleCameraBtn" class="toggle-btn"><i class="fas fa-video-slash"></i> Désactiver la
-                    caméra</button>
+                <button id="toggleCameraBtn" class="toggle-btn">
+                    <i class="fas fa-video-slash"></i> Désactiver la caméra
+                </button>
             </div>
         </section>
     </div>
@@ -157,10 +157,12 @@
                 });
 
                 socket.on('ice-candidate', (candidate) => {
-                    Object.values(peerConnections).forEach(pc => pc.addIceCandidate(new RTCIceCandidate(candidate)));
+                    Object.values(peerConnections).forEach(pc =>
+                        pc.addIceCandidate(new RTCIceCandidate(candidate))
+                    );
                 });
 
-                alert(`Stream démarré : ${streamId}`);
+                window.location.href = `managestream.html?streamId=${encodeURIComponent(streamId)}&title=${encodeURIComponent(title)}`;
             } else {
                 alert(data.error);
             }

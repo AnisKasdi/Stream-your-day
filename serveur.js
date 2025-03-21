@@ -8,7 +8,7 @@ const { Server } = require("socket.io");
 const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 const server = http.createServer(app);
 const io = new Server(server);
 
