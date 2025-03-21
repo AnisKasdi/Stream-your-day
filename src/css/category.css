@@ -93,11 +93,6 @@ header h1 {
     animation: fadeIn 1s ease-in;
 }
 
-header p {
-    font-size: 18px;
-    color: #b0b0b0;
-}
-
 .theme-toggle {
     position: absolute;
     top: 20px;
@@ -114,33 +109,12 @@ header p {
     transform: rotate(360deg);
 }
 
-.main-content button {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(90deg, #673ab7, #9c27b0);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: transform 0.3s;
-}
-
-.main-content button:hover {
-    transform: translateY(-3px);
-}
-
 .stream-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     width: 100%;
     max-width: 1200px;
-}
-
-.stream-grid h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #673ab7;
 }
 
 .stream-card {

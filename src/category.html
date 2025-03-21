@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamYourDay</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Catégorie - StreamYourDay</title>
+    <link rel="stylesheet" href="css/category.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -34,15 +34,11 @@
     </div>
     <div class="main-content">
         <header>
-            <h1>StreamYourDay</h1>
-            <p>Découvrez les streams en direct qui vous correspondent !</p>
+            <h1 id="categoryTitle">Streams</h1>
             <button class="theme-toggle"><i class="fas fa-sun"></i></button>
         </header>
-        <div style="text-align: center; margin: 50px 0;">
-            <a href="startstream.html"><button>Commencer le stream</button></a>
-        </div>
-        <section class="stream-grid" id="activeStreams">
-            <h2>Streams en direct</h2>
+        <section class="stream-grid" id="categoryStreams">
+            <!-- Les streams seront insérés ici -->
         </section>
     </div>
 
@@ -80,19 +76,27 @@
             window.location.href = '/index.html';
         });
 
+        // Récupérer la catégorie depuis l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category') || 'tous';
+        document.getElementById('categoryTitle').textContent = category === 'tous' ? 'Tous les Streams' : `Streams - ${category.replace('-', ' ').toUpperCase()}`;
+
         // Charger les streams
-        async function loadActiveStreams() {
+        async function loadCategoryStreams() {
             const response = await fetch('/api/active-streams', { credentials: 'include' });
             const streams = await response.json();
-            const streamGrid = document.getElementById('activeStreams');
+            const streamGrid = document.getElementById('categoryStreams');
 
-            streamGrid.innerHTML = '<h2>Streams en direct</h2>';
-            if (streams.length === 0) {
-                streamGrid.innerHTML += '<p>Aucun stream actif pour le moment.</p>';
+            // Filtrer les streams par catégorie
+            const filteredStreams = category === 'tous' ? streams : streams.filter(stream => stream.category === category);
+
+            streamGrid.innerHTML = '';
+            if (filteredStreams.length === 0) {
+                streamGrid.innerHTML = '<p>Aucun stream actif dans cette catégorie pour le moment.</p>';
                 return;
             }
 
-            streams.forEach(stream => {
+            filteredStreams.forEach(stream => {
                 const card = document.createElement('div');
                 card.className = 'stream-card';
                 card.innerHTML = `
@@ -135,11 +139,11 @@
         }
 
         // Charger les streams au démarrage
-        loadActiveStreams();
+        loadCategoryStreams();
 
         // Écouter les nouveaux streams via Socket.IO
         const socket = io();
-        socket.on('new-stream', loadActiveStreams);
+        socket.on('new-stream', loadCategoryStreams);
     </script>
 </body>
 
