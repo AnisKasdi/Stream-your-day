@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion/Inscription - Mon Site de Streaming</title>
     <link rel="stylesheet" href="css/login.css">
 </head>
+
 <body>
     <div class="background"></div>
     <div class="container">
         <div class="form-box">
             <h1>Connexion</h1>
-            <form>
-                <input type="text" placeholder="Nom d'utilisateur" required>
-                <input type="password" placeholder="Mot de passe" required>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Nom d'utilisateur" required>
+                <input type="password" id="loginPassword" placeholder="Mot de passe" required>
                 <button type="submit">Se connecter</button>
             </form>
             <p>Pas de compte ? <a href="#" class="switch-link">S'inscrire</a></p>
         </div>
         <div class="form-box signup" style="display: none;">
             <h1>Inscription</h1>
-            <form>
-                <input type="text" placeholder="Nom d'utilisateur" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Mot de passe" required>
+            <form id="signupForm">
+                <input type="text" id="signupUsername" placeholder="Nom d'utilisateur" required>
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Mot de passe" required>
                 <button type="submit">S'inscrire</button>
             </form>
             <p>Déjà un compte ? <a href="#" class="switch-link">Se connecter</a></p>
@@ -40,6 +42,48 @@
                     document.querySelector('.form-box:not(.signup)').style.display = 'block';
             });
         });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                window.location.href = '/profile.html';
+            } else {
+                alert(data.error);
+            }
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            const response = await fetch('/api/create-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password }),
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                window.location.href = '/profile.html';
+            } else {
+                alert(data.error);
+            }
+        });
     </script>
 </body>
+
 </html>

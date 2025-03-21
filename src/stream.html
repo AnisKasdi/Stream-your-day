@@ -1,35 +1,109 @@
+<!-- src/stream.html -->
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream - Mon Site de Streaming</title>
+    <title>Stream en Direct</title>
     <link rel="stylesheet" href="css/stream.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body>
+
+<body class="dark-mode">
     <div class="background"></div>
-    <div class="main-content">
-        <section class="video-player">
-            <div class="video">
-                <div class="video-placeholder">Lecteur Vidéo Ici</div>
-            </div>
-            <div class="stream-info">
-                <h1>Stream Jeux Vidéo en Direct</h1>
-                <p>Streamer: GamerX | <span class="viewer-count">1.2k</span> spectateurs</p>
-                <button class="follow-btn">Suivre</button>
-            </div>
-        </section>
-        <section class="chat">
-            <h2>Chat</h2>
-            <div class="chat-messages">
-                <p><strong>User1:</strong> Super stream !</p>
-                <p><strong>User2:</strong> GG pour la victoire !</p>
-            </div>
-            <div class="chat-input">
-                <input type="text" placeholder="Envoyer un message...">
-                <button>Envoyer</button>
-            </div>
-        </section>
+    <div class="sidebar">
+        <div class="hamburger">☰</div>
+        <div class="logo">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> Accueil</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
+            <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+        </ul>
     </div>
+    <div class="main-content">
+        <h1 id="streamTitle">Stream en Direct</h1>
+        <video id="liveStream" autoplay playsinline style="width: 100%; border-radius: 5px;"></video>
+        <div class="stream-actions">
+            <button onclick="subscribeToStreamer()"><i class="fas fa-user-plus"></i> S'abonner</button>
+            <button onclick="likeStream()"><i class="fas fa-heart"></i> Aimer</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const streamId = urlParams.get('streamId');
+        const video = document.getElementById('liveStream');
+        let streamerUsername = '';
+
+        async function loadStreamInfo() {
+            const response = await fetch('/api/active-streams');
+            const streams = await response.json();
+            const stream = streams.find(s => s.streamId === streamId);
+            if (stream) {
+                document.getElementById('streamTitle').textContent = stream.title;
+                streamerUsername = stream.username;
+            }
+        }
+
+        async function watchStream() {
+            const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+
+            pc.ontrack = (event) => {
+                video.srcObject = event.streams[0];
+            };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) socket.emit('ice-candidate', event.candidate, streamId);
+            };
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            socket.emit('offer', offer, streamId);
+
+            socket.on('answer', async (answer) => {
+                await pc.setRemoteDescription(new RTCSessionDescription(answer));
+            });
+
+            socket.on('ice-candidate', (candidate) => {
+                pc.addIceCandidate(new RTCIceCandidate(candidate));
+            });
+        }
+
+        async function subscribeToStreamer() {
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ streamer: streamerUsername }),
+                credentials: 'include',
+            });
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        async function likeStream() {
+            const response = await fetch('/api/like-stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ streamId }),
+                credentials: 'include',
+            });
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        loadStreamInfo();
+        watchStream();
+
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+    </script>
 </body>
+
 </html>

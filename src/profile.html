@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil - Mon Site de Streaming</title>
     <link rel="stylesheet" href="css/profil.css">
 </head>
+
 <body>
     <div class="background"></div>
     <div class="sidebar">
         <h2>Navigation</h2>
         <ul>
             <li><a href="index.html">Accueil</a></li>
-            <li><a href="#" class="active">Profil</a></li>
-            <li><a href="login.html">Connexion</a></li>
+            <li id="profileLink"><a href="#" class="active">Profil</a></li>
+            <li id="loginLink"><a href="login.html">Connexion</a></li>
+            <li id="logoutLink" style="display: none;"><a href="#" onclick="logout()">Déconnexion</a></li>
         </ul>
     </div>
     <div class="main-content">
         <header>
-            <h1>Profil de [Nom du Streamer]</h1>
+            <h1 id="profileName">Profil de [Chargement...]</h1>
             <button class="follow-btn">Suivre</button>
         </header>
         <section class="profile-info">
             <div class="avatar">
-                <img src="avatar.png" alt="Avatar"> <!-- Remplace par une vraie image -->
+                <img id="profilePicture" src="/uploads/default.jpg" alt="Avatar">
             </div>
             <div class="bio">
                 <h2>À propos</h2>
-                <p>Salut ! Je suis [Nom du Streamer], passionné de jeux vidéo et de discussions en direct. Rejoignez-moi pour des streams fun et interactifs !</p>
+                <p id="bioText">Chargement des informations...</p>
                 <p>Abonnés : <span class="follower-count">1.5k</span></p>
             </div>
         </section>
@@ -47,5 +50,39 @@
             </div>
         </section>
     </div>
+
+    <script>
+        async function loadProfile() {
+            const response = await fetch('/api/profile', { credentials: 'include' });
+            const data = await response.json();
+            const profileLink = document.getElementById('profileLink');
+            const loginLink = document.getElementById('loginLink');
+            const logoutLink = document.getElementById('logoutLink');
+
+            if (response.ok) {
+                document.getElementById('profileName').textContent = `Profil de ${data.displayName}`;
+                document.getElementById('profilePicture').src = data.profilePicture;
+                document.getElementById('bioText').textContent = `Salut ! Je suis ${data.displayName}, passionné de streaming.`;
+
+                loginLink.style.display = 'none';
+                profileLink.style.display = 'block';
+                logoutLink.style.display = 'block';
+            } else {
+                alert(data.error);
+                window.location.href = '/login.html';
+                profileLink.style.display = 'none';
+                loginLink.style.display = 'block';
+                logoutLink.style.display = 'none';
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { credentials: 'include' });
+            window.location.href = '/login.html';
+        }
+
+        loadProfile();
+    </script>
 </body>
+
 </html>

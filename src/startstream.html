@@ -1,19 +1,21 @@
+<!-- src/startstream.html -->
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Commencer un Stream - Mon Site de Streaming</title>
     <link rel="stylesheet" href="css/startstream.css">
-    <!-- FontAwesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+
 <body class="dark-mode">
     <div class="background"></div>
     <div class="sidebar">
         <div class="hamburger">☰</div>
         <div class="logo">
-            <img src="src/logo.png" alt="Logo"> <!-- Remplace par ton vrai logo -->
+            <img src="src/logo.png" alt="Logo">
         </div>
         <h2>Navigation</h2>
         <ul>
@@ -60,7 +62,7 @@
                             </label>
                             <label class="checkbox">
                                 <input type="checkbox" id="privateStream">
-                                Stream privé (invitation uniquement)
+                                Stream privé
                             </label>
                         </div>
                     </div>
@@ -69,41 +71,114 @@
             </div>
             <div class="stream-preview">
                 <h2>Aperçu en Direct</h2>
-                <div class="video-placeholder" id="streamPreview">Aperçu de votre caméra/micro (non actif)</div>
+                <video id="streamPreview" autoplay playsinline style="width: 100%; border-radius: 5px;"></video>
+                <button id="toggleCameraBtn" class="toggle-btn"><i class="fas fa-video-slash"></i> Désactiver la
+                    caméra</button>
             </div>
         </section>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Menu pliable
-        document.querySelector('.hamburger').addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
+        const socket = io();
+        let stream = null;
+        const video = document.getElementById('streamPreview');
+        const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+        let isCameraOn = false;
+        let peerConnections = {};
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                video.srcObject = stream;
+                isCameraOn = true;
+                toggleCameraBtn.innerHTML = '<i class="fas fa-video-slash"></i> Désactiver la caméra';
+            } catch (err) {
+                console.error("Erreur caméra :", err);
+                video.insertAdjacentHTML('afterend', '<p style="color: red;">Erreur caméra</p>');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+                isCameraOn = false;
+                toggleCameraBtn.innerHTML = '<i class="fas fa-video"></i> Activer la caméra';
+            }
+        }
+
+        toggleCameraBtn.addEventListener('click', () => {
+            if (isCameraOn) stopCamera();
+            else startCamera();
         });
 
-        // Toggle mode sombre/clair
-        document.querySelector('.theme-toggle').addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            document.body.classList.toggle('light-mode');
-            const btn = document.querySelector('.theme-toggle');
-            btn.innerHTML = document.body.classList.contains('dark-mode') 
-                ? '<i class="fas fa-sun"></i> Mode Clair' 
-                : '<i class="fas fa-moon"></i> Mode Sombre';
-        });
+        window.addEventListener('load', startCamera);
 
-        // Gestion du formulaire de démarrage du stream
-        document.getElementById('streamForm').addEventListener('submit', (e) => {
+        document.getElementById('streamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!stream) {
+                alert("Activez la caméra avant de démarrer !");
+                return;
+            }
+
             const title = document.getElementById('streamTitle').value;
             const category = document.getElementById('streamCategory').value;
             const description = document.getElementById('streamDescription').value;
             const chatEnabled = document.getElementById('chatEnabled').checked;
             const privateStream = document.getElementById('privateStream').checked;
 
-            // Simulation du démarrage du stream
-            alert(`Stream démarré !\nTitre: ${title}\nCatégorie: ${category}\nDescription: ${description}\nChat: ${chatEnabled ? 'Activé' : 'Désactivé'}\nPrivé: ${privateStream ? 'Oui' : 'Non'}`);
-            // Redirection vers la page de stream
-            window.location.href = 'stream.html'; 
+            const response = await fetch('/api/start-stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, category, description, chatEnabled, privateStream }),
+                credentials: 'include',
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                const streamId = data.streamId;
+                socket.emit('start-stream', streamId);
+
+                socket.on('offer', async (offer, viewerId) => {
+                    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+                    peerConnections[viewerId] = pc;
+
+                    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+                    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    socket.emit('answer', answer, viewerId);
+
+                    pc.onicecandidate = (event) => {
+                        if (event.candidate) socket.emit('ice-candidate', event.candidate, streamId);
+                    };
+                });
+
+                socket.on('ice-candidate', (candidate) => {
+                    Object.values(peerConnections).forEach(pc => pc.addIceCandidate(new RTCIceCandidate(candidate)));
+                });
+
+                alert(`Stream démarré : ${streamId}`);
+            } else {
+                alert(data.error);
+            }
+        });
+
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+            const btn = document.querySelector('.theme-toggle');
+            btn.innerHTML = document.body.classList.contains('dark-mode')
+                ? '<i class="fas fa-sun"></i> Mode Clair'
+                : '<i class="fas fa-moon"></i> Mode Sombre';
         });
     </script>
 </body>
+
 </html>
