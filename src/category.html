@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,32 +7,36 @@
     <link rel="stylesheet" href="css/category.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-
 <body class="dark-mode">
     <div class="background"></div>
-    <div class="sidebar">
-        <div class="hamburger"><i class="fas fa-bars"></i></div>
-        <div class="logo">
-            <img src="src/logo.png" alt="Logo StreamYourDay">
-        </div>
-        <h2>Genres</h2>
-        <ul>
-            <li><a href="category.html?category=tous"><i class="fas fa-globe"></i> Tous</a></li>
-            <li><a href="category.html?category=jeux-video"><i class="fas fa-gamepad"></i> Jeux Vidéo</a></li>
-            <li><a href="category.html?category=sport"><i class="fas fa-futbol"></i> Sport</a></li>
-            <li><a href="category.html?category=chatting"><i class="fas fa-comment"></i> Chatting</a></li>
-            <li><a href="category.html?category=musique"><i class="fas fa-music"></i> Musique</a></li>
-            <li><a href="category.html?category=cuisine"><i class="fas fa-utensils"></i> Cuisine</a></li>
-            <li><a href="category.html?category=art"><i class="fas fa-paint-brush"></i> Art</a></li>
-        </ul>
-        <h2>Navigation</h2>
-        <ul id="nav-links">
-            <li><a href="profile.html"><i class="fas fa-user"></i> Profil</a></li>
-            <li><a href="#" id="logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-        </ul>
+    <div class="tabs">
+        <input type="radio" id="tab1" name="tab">
+        <label for="tab1" data-href="category.html?category=tous"><i class="fas fa-globe"></i> Tous</label>
+        <input type="radio" id="tab2" name="tab">
+        <label for="tab2" data-href="category.html?category=jeux-video"><i class="fas fa-gamepad"></i> Jeux Vidéo</label>
+        <input type="radio" id="tab3" name="tab">
+        <label for="tab3" data-href="category.html?category=sport"><i class="fas fa-futbol"></i> Sport</label>
+        <input type="radio" id="tab4" name="tab">
+        <label for="tab4" data-href="category.html?category=chatting"><i class="fas fa-comment"></i> Chatting</label>
+        <input type="radio" id="tab5" name="tab">
+        <label for="tab5" data-href="category.html?category=musique"><i class="fas fa-music"></i> Musique</label>
+        <input type="radio" id="tab6" name="tab">
+        <label for="tab6" data-href="category.html?category=cuisine"><i class="fas fa-utensils"></i> Cuisine</label>
+        <input type="radio" id="tab7" name="tab">
+        <label for="tab7" data-href="category.html?category=art"><i class="fas fa-paint-brush"></i> Art</label>
+        <input type="radio" id="tab8" name="tab">
+        <label for="tab8" data-href="profile.html"><i class="fas fa-user"></i> Profil</label>
+        <input type="radio" id="tab9" name="tab">
+        <label for="tab9" id="logout-tab" data-href="#"><i class="fas fa-sign-out-alt"></i> Déconnexion</label>
+        <input type="radio" id="tab10" name="tab">
+        <label for="tab10" id="login-tab" data-href="login.html" style="display: none;"><i class="fas fa-sign-in-alt"></i> Connexion</label>
+        <div class="marker"></div>
     </div>
     <div class="main-content">
         <header>
+            <div class="logo">
+                <img src="logo.png" alt="Logo StreamYourDay">
+            </div>
             <h1 id="categoryTitle">Streams</h1>
             <button class="theme-toggle"><i class="fas fa-sun"></i></button>
         </header>
@@ -44,10 +47,58 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        document.querySelector('.hamburger').addEventListener('click', () => {
-            document.querySelector('.sidebar').classList.toggle('collapsed');
+        // Gestion de la position du marker
+        const tabs = document.querySelector('.tabs');
+        const marker = tabs.querySelector('.marker');
+        function updateMarker() {
+            const checkedLabel = tabs.querySelector('input[type="radio"]:checked + label');
+            if (checkedLabel) {
+                const top = checkedLabel.offsetTop;
+                const height = checkedLabel.offsetHeight;
+                marker.style.top = `${top}px`;
+                marker.style.height = `${height}px`;
+            }
+        }
+
+        // Synchroniser avec l'URL au chargement
+        function syncTabsWithURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category') || 'tous';
+            const tabMap = {
+                'tous': 'tab1',
+                'jeux-video': 'tab2',
+                'sport': 'tab3',
+                'chatting': 'tab4',
+                'musique': 'tab5',
+                'cuisine': 'tab6',
+                'art': 'tab7'
+            };
+            const tabId = tabMap[category] || 'tab1';
+            document.getElementById(tabId).checked = true;
+            updateMarker();
+        }
+
+        tabs.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.addEventListener('change', updateMarker);
+        });
+        window.addEventListener('load', syncTabsWithURL);
+
+        // Navigation avec délai pour l'animation
+        tabs.querySelectorAll('label').forEach(label => {
+            label.addEventListener('click', (e) => {
+                const href = label.getAttribute('data-href');
+                if (href && href !== '#') {
+                    const input = document.getElementById(label.getAttribute('for'));
+                    input.checked = true;
+                    updateMarker();
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
         });
 
+        // Toggle mode sombre/clair
         document.querySelector('.theme-toggle').addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
@@ -60,20 +111,25 @@
         // Vérifier l'état de connexion
         async function checkLoginStatus() {
             const response = await fetch('/api/profile', { credentials: 'include' });
-            const navLinks = document.getElementById('nav-links');
+            const logoutTab = document.getElementById('logout-tab');
+            const loginTab = document.getElementById('login-tab');
             if (response.ok) {
-                navLinks.style.display = 'block';
+                logoutTab.style.display = 'block';
+                loginTab.style.display = 'none';
             } else {
-                navLinks.innerHTML = '<li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>';
+                logoutTab.style.display = 'none';
+                loginTab.style.display = 'block';
             }
+            syncTabsWithURL(); // Synchroniser après mise à jour des tabs
         }
         checkLoginStatus();
 
         // Déconnexion
-        document.getElementById('logout').addEventListener('click', async (e) => {
-            e.preventDefault();
+        document.getElementById('logout-tab').addEventListener('click', async () => {
             await fetch('/api/logout', { credentials: 'include' });
-            window.location.href = '/index.html';
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 300);
         });
 
         // Récupérer la catégorie depuis l'URL
@@ -87,7 +143,6 @@
             const streams = await response.json();
             const streamGrid = document.getElementById('categoryStreams');
 
-            // Filtrer les streams par catégorie
             const filteredStreams = category === 'tous' ? streams : streams.filter(stream => stream.category === category);
 
             streamGrid.innerHTML = '';
@@ -146,5 +201,4 @@
         socket.on('new-stream', loadCategoryStreams);
     </script>
 </body>
-
 </html>
